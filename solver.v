@@ -63,7 +63,7 @@ fn execute_operation_queue (queue [][]Operation) f64 {
 
 fn gen_operation_queue(terms []Term) [][]Operation {
 
-	mut tiered_operation_queue := [][]Operation{len: 4, init: []Operation{}}
+	mut tiered_operation_queue := [][]Operation{len: 2, init: []Operation{}}
 
 	// Construct operation queue
 	for index, term in terms {
@@ -71,25 +71,28 @@ fn gen_operation_queue(terms []Term) [][]Operation {
 			continue
 		}
 
-		mut operator_operation_index := 0
+		mut operator_index := 0
+		mut operation_index := 0
 
 		match term.tokens[0] {
 			'/' {
-				operator_operation_index = 1
+				operator_index = 1
 			}
 			'+' {
-				operator_operation_index = 2
+				operator_index = 2
+				operation_index = 1
 			}
 			'-' {
-				operator_operation_index = 3
+				operator_index = 3
+				operation_index = 1
 			}
 			else {}
 		}
 
-		tiered_operation_queue[operator_operation_index] << Operation{
+		tiered_operation_queue[operation_index] << Operation{
 			left: evaluate_numbers(terms[index-1].tokens)
 			right: evaluate_numbers(terms[index+1].tokens)
-			operator: operator_operation_index
+			operator: operator_index
 			}
 
 	}
