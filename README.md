@@ -1,5 +1,13 @@
 # simple-equation-solver
-A simple equation solver (eg. 8 * 7 / (6+5) - 4 = 1.09 )
+A simple equation solver (eg. 85 * 7 / 6 + 52 - 412 = −260.83... )
 
-Currently works if equations are already in correct order of operations.
-That is next to implement.
+Features:
+- String parser
+- Shunting-yard algorithm implementation
+- Mathmatical order of operations implementation
+
+Todo:
+- Implement more than just plus, minus, times, and divide.
+- Strip whitespace
+
+Made in [Vlang](https://github.com/vlang/v/)
