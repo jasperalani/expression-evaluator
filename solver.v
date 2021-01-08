@@ -5,13 +5,7 @@ struct Term {
 	mut:
 	tokens []string
 	is_operator bool
-}
-
-struct Operation {
-	mut:
-	left int
-	right int
-	operator int
+	precedence int
 }
 
 fn main() {
@@ -20,92 +14,175 @@ fn main() {
 
 	terms := get_term_list(input_equation)
 
-	operation_queue := gen_operation_queue(terms)
+	postfix_notation := infix_to_postfix(terms)
 
-	result := execute_operation_queue(operation_queue)
+	evaluated_answer := evaluate_postfix(postfix_notation)
 
-	println(result)
+	if evaluated_answer.stack.len > 0 {
+		mut answer := evaluate_tokens(evaluated_answer.stack[0].tokens)
+		
+		// Cast int64 if number is an integer
+		if i64(answer) == answer {
+			println(i64(answer))
+			exit(0)
+		}
+
+		println(answer)
+	} else {
+		println('error :P')
+		exit(1)
+	}
+
+	exit(0)
 
 }
 
-fn execute_operation_queue (queue [][]Operation) f64 {
-	mut op_output := 0.0
+/*** Stack ***/
 
-	// Execute operation queue
-	for _, tier in queue {
-		for op_index, operation in tier {
+struct Stack {
+	mut:
+	stack []Term
+} 
 
-			match operation.operator {
-				0 {
-					if op_index == 0 {
-						op_output = operation.left * operation.right
-					}else{
-						op_output = op_output * operation.right
-					}
+fn (mut stack Stack) push (term Term) {
+	if term.tokens.len == 0 {
+		return
+	}
+	stack.stack << term
+}
+
+fn (mut stack Stack) pop () Term {
+	if stack.stack.len > 0 {
+		ret := stack.stack[stack.stack.len-1]
+		stack.stack = stack.stack[0..stack.stack.len-1]
+		return ret
+	}
+	return Term{}
+}
+
+fn (mut stack Stack) get_top () Term {
+	if stack.stack.len > 0 {
+		return stack.stack[stack.stack.len-1]
+	}
+	return Term{}
+}
+
+/******/
+
+fn evaluate_postfix(stack Stack) Stack {
+	mut oop_stack := Stack{}
+
+	mut tmp1 := Term{}
+	mut tmp2 := Term{}
+
+	for _, term in stack.stack {
+		if !term.is_operator {
+			oop_stack.push(term)
+		}else{
+			tmp1 = oop_stack.pop()
+			tmp2 = oop_stack.pop() 
+
+			mut result := ""
+
+			match term.tokens[0] {
+				'*' {
+					result = strconv.f64_to_str_l(evaluate_tokens(tmp1.tokens) * evaluate_tokens(tmp2.tokens))
 				}
-				1 {
-					op_output = op_output / operation.right
+				'/' {
+					result = strconv.f64_to_str_l(evaluate_tokens(tmp2.tokens) / evaluate_tokens(tmp1.tokens))
 				}
-				2 {
-					op_output = op_output + operation.right
+				'+' {
+					result = strconv.f64_to_str_l(evaluate_tokens(tmp1.tokens) + evaluate_tokens(tmp2.tokens))
 				}
-				3 {
-					op_output = op_output - operation.right
+				'-' {
+					result = strconv.f64_to_str_l(evaluate_tokens(tmp2.tokens) - evaluate_tokens(tmp1.tokens))
 				}
 				else {}
 			}
 
+			mut output := []string{}
+			for _, rbyte in result {
+				output << rbyte.ascii_str()
+			}
+			
+			result_term := Term{
+				tokens: output
+			}
+
+			// Push output of last evaluation to stack
+			oop_stack.push(result_term)
 		}
 	}
 
-	return op_output
+	return oop_stack
 }
 
-fn gen_operation_queue(terms []Term) [][]Operation {
+fn infix_to_postfix(terms []Term) Stack {
+	// Convert infix to postfix notation
+	mut output := Stack{}
+	mut operator_stack := Stack{}
 
-	mut tiered_operation_queue := [][]Operation{len: 2, init: []Operation{}}
-
-	// Construct operation queue
-	for index, term in terms {
+	outer: for _, term in terms {
 		if !term.is_operator {
-			continue
+			output.push(term)
+		}else{
+			// term is an operator		
+			
+			if operator_stack.stack.len == 0 {
+				operator_stack.push(term)
+				continue outer
+			}
+
+			for {
+				top_of_stack := operator_stack.get_top()
+
+				if term.precedence > top_of_stack.precedence {
+					operator_stack.push(term)
+					continue outer
+				}
+
+				if term.precedence == top_of_stack.precedence {
+					output.push(operator_stack.pop())
+					operator_stack.push(term)
+					continue outer
+				} 
+
+
+				if term.precedence < top_of_stack.precedence {
+					output.push(operator_stack.pop())
+					continue
+				}
+			} 
+
 		}
-
-		mut operator_index := 0
-		mut operation_index := 0
-
-		match term.tokens[0] {
-			'/' {
-				operator_index = 1
-			}
-			'+' {
-				operator_index = 2
-				operation_index = 1
-			}
-			'-' {
-				operator_index = 3
-				operation_index = 1
-			}
-			else {}
-		}
-
-		tiered_operation_queue[operation_index] << Operation{
-			left: evaluate_numbers(terms[index-1].tokens)
-			right: evaluate_numbers(terms[index+1].tokens)
-			operator: operator_index
-			}
-
 	}
 
-	return tiered_operation_queue
+	if operator_stack.stack.len > 0 {
+		for _, _ in operator_stack.stack {
+			output.push(operator_stack.pop()) 
+		} 
+	}
 
+	return output
 }
 
-fn evaluate_numbers(tokens []string) int {
-	mut return_number := 0
+fn evaluate_tokens(tokens []string) f64 {
+
+	// Find possibly existing decimal point
+	for _, token in tokens {
+		if '.' == token {
+			mut built_string := ""
+			for _, s_token in tokens {
+				built_string += s_token
+			}
+			return strconv.atof64(built_string)
+		}
+	}
+
+	mut return_number := 0.0
 	for index, token in tokens {
 		mut number := strconv.atoi(token) or {
-			return 0
+			return 0.0
 		}
 
 		zeros := tokens.len - index
@@ -115,6 +192,7 @@ fn evaluate_numbers(tokens []string) int {
 		
 		return_number += number
 	}
+
 	return return_number
 }
 
@@ -129,7 +207,6 @@ fn get_term_list (equation string) []Term {
 	mut working_term := Term{}
 
 	mut used_term_indexes := []int{}
-	mut used_index_offset := 0
 
 	outer: for index, token in working_tokens_list {
 		
@@ -148,15 +225,21 @@ fn get_term_list (equation string) []Term {
 		}
 
 		if 0 != index && in_array_str(token, operators) {
-			working_term = Term{}
+			working_term = Term{} 
 			working_term.tokens << token
 			working_term.is_operator = true
+			working_term.precedence = 1
+			match token {
+				'/' { working_term.precedence = 1 }
+				'+' { working_term.precedence = 0 }
+				'-' { working_term.precedence = 0 }
+				else {}
+			}
 			// term is complete, append to array
 			terms << working_term
 			// reset working term 
 			working_term = Term{}
 			used_term_indexes << index
-			used_index_offset++
 			continue
 		}
 
