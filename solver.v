@@ -169,16 +169,15 @@ fn infix_to_postfix(terms []Term) Stack {
 fn evaluate_tokens(tokens []string) f64 {
 
 	// Find possibly existing decimal point
-	for _, token in tokens {
-		if '.' == token {
-			mut built_string := ""
-			for _, s_token in tokens {
-				built_string += s_token
-			}
-			return strconv.atof64(built_string)
+	if '.' in tokens {
+		mut built_string := ""
+		for _, s_token in tokens {
+			built_string += s_token
 		}
+		return strconv.atof64(built_string)
 	}
 
+	// Working from left to right to create a number
 	mut return_number := 0.0
 	for index, token in tokens {
 		mut number := strconv.atoi(token) or {
@@ -210,21 +209,21 @@ fn get_term_list (equation string) []Term {
 
 	outer: for index, token in working_tokens_list {
 		
-		if 0 == index && in_array_str(token, operators) {
+		if 0 == index && token in operators {
 			eprintln("First character cannot be an operation.")
 			exit(1)
 		}
 		
-		if !in_array_str(token, operators) && !in_array_str(token, numbers) {
+		if !(token in operators) && !(token in numbers) {
 			eprintln("Equation can only contain numbers or one of: * / + -") 
 			exit(1)
 		}
 
-		if in_array_int(index, used_term_indexes){
+		if index in used_term_indexes {
 			continue
 		}
 
-		if 0 != index && in_array_str(token, operators) {
+		if 0 != index && token in operators {
 			working_term = Term{} 
 			working_term.tokens << token
 			working_term.is_operator = true
@@ -243,7 +242,7 @@ fn get_term_list (equation string) []Term {
 			continue
 		}
 
-		if in_array_str(token, numbers) {
+		if token in numbers {
 
 			working_term = Term{} 
 			working_term.tokens << token
@@ -261,7 +260,7 @@ fn get_term_list (equation string) []Term {
 			// find the rest of the number
 			for sub_index, sub_token in tokens[index+1..tokens.len] {
 
-				if !in_array_str(sub_token, operators) {
+				if !(sub_token in operators) {
 					if used_term_indexes.len > 0 {
 						used_term_indexes << used_term_indexes[used_term_indexes.len-1]+1
 					}else{
@@ -293,24 +292,4 @@ fn gen_token_list (equation string) []string {
 		tokens << equation[index..index+1]
 	}
 	return tokens
-}
-
-fn in_array_str(needle string, haystack []string) bool {
-	for _, item in haystack {
-		if item == needle {
-			return true
-		}
-	}
-
-	return false
-}
-
-fn in_array_int(needle int, haystack []int) bool {
-	for _, item in haystack {
-		if item == needle {
-			return true
-		}
-	}
-
-	return false
 }
