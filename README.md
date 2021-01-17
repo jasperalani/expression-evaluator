@@ -10,4 +10,4 @@ Todo:
 - Implement more than just plus, minus, times, and divide.
 - Strip whitespace
 
-Made in [Vlang](https://github.com/vlang/v/)
+Made with [V Programming Language](https://vlang.io/)
