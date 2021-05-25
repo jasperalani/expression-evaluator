@@ -7,7 +7,7 @@ Features:
 - Mathmatical order of operations implementation
 
 Todo:
-- Implement more than just plus, minus, times, and divide.
+- Implement more than just plus, minus, times, and divide. https://en.wikipedia.org/wiki/Shunting-yard_algorithm#The_algorithm_in_detail
 - Strip whitespace
 
 Made in [Vlang](https://github.com/vlang/v/)
