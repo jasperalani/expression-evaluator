@@ -157,9 +157,13 @@ fn infix_to_postfix(terms []Term) Stack {
 		}
 	}
 
+	// Sort remaining terms by precedence
+	operator_stack.stack.sort(a.precedence > b.precedence)
+
+	// Push all remaining terms to the output stack
 	if operator_stack.stack.len > 0 {
-		for _, _ in operator_stack.stack {
-			output.push(operator_stack.pop()) 
+		for _, item in operator_stack.stack {
+			output.push(item) 
 		} 
 	}
 
