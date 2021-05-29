@@ -1,7 +1,5 @@
 # expression-evaluator
-An expression evaluator (eg. 85 * 7 / 6 + 52 - 412 = −260.83... )
-
-https://en.wikipedia.org/wiki/Shunting-yard_algorithm#The_algorithm_in_detail
+Evaluate mathmatical expressions using a command line interface!
 
 Features:
 - String parser
@@ -16,5 +14,9 @@ Todo:
 - Implement parenthases operator
 - Implement power operator
 - Strip whitespace
+
+References:
+- https://www.digitalocean.com/community/conceptual_articles/understanding-order-of-operations
+- https://en.wikipedia.org/wiki/Shunting-yard_algorithm#The_algorithm_in_detail
 
 Made in [Vlang](https://github.com/vlang/v/)
