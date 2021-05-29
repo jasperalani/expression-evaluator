@@ -19,4 +19,4 @@ References:
 - https://www.digitalocean.com/community/conceptual_articles/understanding-order-of-operations
 - https://en.wikipedia.org/wiki/Shunting-yard_algorithm#The_algorithm_in_detail
 
-Made in [Vlang](https://github.com/vlang/v/)
+Made in [Vlang](https://github.com/vlang/v/)!
